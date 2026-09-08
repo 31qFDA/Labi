@@ -10,6 +10,7 @@ from matplotlib.figure import Figure
 import subprocess
 import sys
 import calendar
+from welcome_screen import WelcomeScreen
 
 # Импорт модулей и настройка констант
 DATA_FILE = "money_watcher_data.json"
@@ -69,6 +70,15 @@ MONTHS_RU = {
     "October": "Октябрь", "November": "Ноябрь", "December": "Декабрь"
 }
 
+# Класс для приветственного экрана
+def show_welcome_screen(self):
+    welcome = WelcomeScreen(
+        self.root,
+        colors=self.colors,
+        duration=3000  # 3 секунды
+    )
+    welcome.show()
+    self.welcome_screen = welcome
 
 # Класс для управления данными приложения
 class DataManager:
@@ -474,11 +484,24 @@ class MoneyWatcherApp:
 
         self.setup_window()
         self.apply_theme()
+
+        # Показываем приветственное окно
+        self.show_welcome_screen()
+
         self.create_sidebar()
         self.create_main_area()
 
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.refresh_all_displays()
+
+    def show_welcome_screen(self):
+        """Показ приветственного окна"""
+        self.welcome_screen = WelcomeScreen(
+            self.root,
+            colors=self.colors,
+            duration=3000  # Показывать 3 секунды
+        )
+        self.welcome_screen.show()
 
     # Настройка параметров главного окна
     def setup_window(self):
@@ -495,6 +518,8 @@ class MoneyWatcherApp:
 
     # Обработчик закрытия приложения
     def on_closing(self):
+        if hasattr(self, 'welcome_screen') and self.welcome_screen.is_showing():
+            self.welcome_screen.close()
         self.data_manager.save_data()
         self.root.destroy()
 
@@ -2346,5 +2371,10 @@ class MoneyWatcherApp:
 # Точка входа в приложение
 if __name__ == "__main__":
     root = tk.Tk()
+    root.withdraw()
     app = MoneyWatcherApp(root)
+    def show_main():
+        root.deiconify()
+        root.lift()
+    root.after(3100, show_main)  # Показываем после завершения приветствия
     root.mainloop()
